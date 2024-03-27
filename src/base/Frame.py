@@ -7,7 +7,7 @@ from src.base.Physics import Timestamp, Acc, Vel
 
 class Frame:
 
-    cur_timestamp = Timestamp(0);
+    cur_timestamp = Timestamp(0)
     acc = 0.0           # second
     vel = 0.0           # m/s
     disp = 0.0          # m/s^2
@@ -45,4 +45,8 @@ class FrameSeries:
     def ParserOut(self):
         # TODO: add logic: publish as ndarray
         # consider: if necessary to add publish nodes?
+        pass
+    
+    def Dumpfiles(self, format):
+        # TODO: add logic: judge if format support: txt, csv...
         pass

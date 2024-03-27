@@ -61,16 +61,22 @@ class SwarmOptim:
         # TODO: define fit_func
         return
 
-    def Reset(self, dimension = 1, random_func = lambda: None):
+    def Reset(self, need_init = 0, dimension = 1, random_func = lambda: None):
+        if need_init:
+            self.Init(random_func = random_func)
+        '''
         if random_func:
             random_func(self.particle_num, self.solution_space_limit)
+        '''
                 # TODO: finish random func: define as class method or function
         self.particles = [Swarm(dimension) for i in range(self.particle_num)]
         self.fitness_values = [0 for i in range(self.particle_num)]
         return
     
-    def Init(self):
+    def Init(self, random_func = lambda: None):
+        random_func(self.particle_num, self.solution_space_limit)
         # TODO: add logic: randomrize velocity and position
+        # TODO: decide: whether random_func need to be defined in class SwarmOptim or in MathUtils
         return
 
     def UpdateIndividual(self):
