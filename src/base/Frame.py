@@ -3,14 +3,18 @@
 import sys
 import numpy
 sys.path.append("./src/base/")
-from src.base.Physics import Timestamp, Acc, Vel
+from src.base.Physics import Timestamp, Acc, Vel, Disp, Stress, Strain
 
 class Frame:
 
     cur_timestamp = Timestamp(0)
-    acc = 0.0           # second
-    vel = 0.0           # m/s
-    disp = 0.0          # m/s^2
+    acc = Acc(0)           # second
+    vel = Vel(0)           # m/s
+    disp = Disp(0)          # m/s^2
+
+    stress = Stress()
+    strain = Strain()
+    # TODO: fix default construction
 
     K = 0.0
     C = 0.0
