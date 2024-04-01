@@ -5,6 +5,7 @@ import pandas
 import sys
 sys.path.append("./src/base/")
 from ..base.Physics import Timestamp, Dimension
+from ..base.MathUtils import RandomDistribute, RandMode
 
 class Swarm:
     velocity = []
@@ -44,13 +45,23 @@ class SwarmOptim:
     def __init__(self, dimension = 1):
         self.Reset(dimension = dimension)
 
+    def __len__(self):
+        return self.particle_num
+
     def Solve(self):
         for i in range(self.recur_times):
             self.FitnessEvaluate()
-            self.FindGlobalBest()
+            self.UpdateVelocity()
+            self.UpdateBestLocation()
+            self.UpdateInertia()
+            self.Judge()
+            self.Mutate()
             if self.Judge():
                 return
         return
+    
+    def Update(self):
+        pass
 
     def FitnessEvaluate(self, fit_func = lambda: None):
         self.fitness_values = fit_func(self)
@@ -70,20 +81,20 @@ class SwarmOptim:
         return
     
     def Init(self, random_func = lambda: None):
-        random_func(self.particle_num, self.solution_space_limit)
+        # random_func(self.particle_num, self.solution_space_limit)
         # TODO: add logic: randomrize velocity and position
         # TODO: decide: whether random_func need to be defined in class SwarmOptim or in MathUtils
         return
 
-    def UpdateIndividual(self):
+    def UpdateVelocity(self):
         # TODO: add logic: updata best position of individuals
         pass
 
-    def UpdateSociety(self):
+    def UpdateBestLocation(self):
         # TODO: add logic: update global best position
         pass
     
-    def FindGlobalBest(self):
+    def UpdateInertia(self):
         # TODO: add logic: some kind of sort function
         pass
 
