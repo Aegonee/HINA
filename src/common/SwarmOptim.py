@@ -44,10 +44,6 @@ class SwarmOptim:
     def __init__(self, dimension = 1):
         self.Reset(dimension = dimension)
 
-    @staticmethod
-    def GetInstance():
-        pass
-
     def Solve(self):
         for i in range(self.recur_times):
             self.FitnessEvaluate()
