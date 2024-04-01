@@ -36,5 +36,27 @@ class Disp:
     disp_y = 0.0
     disp_z = 0.0
 
-    def __init(self, disp):
-        self.disp = disp
+    def __init__(self, disp):
+        self.disp_x = disp
+
+class Stress:
+    sigma_xx = 0.0
+    sigma_yy = 0.0
+    sigma_zz = 0.0
+    sigma_xy = 0.0
+    sigma_xz = 0.0
+    sigma_yz = 0.0
+
+    def __init__(self):
+        pass
+
+class Strain:
+    epsilon_xx = 0.0
+    epsilon_yy = 0.0
+    epsilon_zz = 0.0
+    epsilon_xy = 0.0
+    epsilon_xz = 0.0
+    epsilon_yz = 0.0
+
+    def __init__(self):
+        pass
