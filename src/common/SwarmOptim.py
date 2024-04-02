@@ -140,6 +140,15 @@ class SwarmOptim:
         pass
 
     def UpdateBestLocation(self):
+        try:
+            cur_pos = [
+                self.velocity[len(self.velocity) - 1][i]
+                + self.position[len(self.position) - 1][i]
+                for i in range(self.particle_num)
+            ]
+        except IndexError:
+            raise IndexError("Invalid Velocity or Position")
+        self.position.append(cur_pos)
         # TODO: add logic: update global best position
         pass
 
@@ -183,7 +192,8 @@ class SwarmOptim:
                         + (self.inertia_weight_start[0] - self.inertia_weight_min[0])
                         * (self.fitness_values[i] - min_fitness)
                         / (average_fitness - min_fitness)
-                    ) for i in range(self.particle_num)
+                    )
+                    for i in range(self.particle_num)
                 ]
 
     def Judge(self):
@@ -200,9 +210,12 @@ class SwarmOptim:
 
     def CurVelocity(self, index, rand_params=[1, 1]):
         return (
-            self.velocity[index - 1] * self.inertia_weight_cur[0]
+            self.velocity[len(self.velocity) - 1][index - 1]
+            * self.inertia_weight_cur[0]
             + self.individual_param[index]
             * rand_params[0]
-            * (self.pbest[index] - self.position[index])
-            + self.social_param * rand_params[1] * (self.gbest - self.position[index])
+            * (self.pbest[index] - self.position[len(self.position) - 1][index])
+            + self.social_param
+            * rand_params[1]
+            * (self.gbest - self.position[len(self.position) - 1][index])
         )
