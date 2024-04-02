@@ -1,19 +1,22 @@
 # 2024.3.26 created by: An Chang
+# TODO: refator with numpy.ndarray
 
 import numpy as np
 import pandas
 import sys
 import random
+
 sys.path.append("./src/base/")
 from ..base.Physics import Timestamp, Dimension
 from ..base.MathUtils import RandomDistribute, RandMode
+
 
 class Swarm:
     velocity = []
     position = []
     dimension = 1
 
-    def __init__(self, postition = [], velocity = [], dimension=1):
+    def __init__(self, postition=[], velocity=[], dimension=1):
         self.dimension = dimension
         if postition.empty():
             self.velocity = [0 for i in range(dimension)]
@@ -26,9 +29,9 @@ class SwarmOptim:
     particle_num = 10
     partical_demension = 1
     time_step = 0.0
+    total_frames = 0
 
     # Swarm
-    # TODO: refactor with Swarm
     particles = []
     global_optimized_particle = Swarm(1)
     velocity = []
@@ -58,7 +61,8 @@ class SwarmOptim:
     def __len__(self):
         return self.particle_num
 
-    def Solve(self, is_greedy=False, is_mutate=False):
+    def Solve(self, is_greedy=False, is_mutate=False, init_rand_mode=RandMode.NORMAL):
+        self.Init(init_rand_mode)
         for i in range(self.recur_times):
             self.Update(is_mutate=is_mutate)
             if self.Judge():
@@ -74,7 +78,9 @@ class SwarmOptim:
             self.Mutate()
 
     def FitnessEvaluate(self, fit_func=lambda: None):
-        self.fitness_values = [fit_func(self.particles[i]) for i in range(self.dimension)]
+        self.fitness_values = [
+            fit_func(self.particles[i]) for i in range(self.dimension)
+        ]
         return
 
     def Reset(self, need_init=0, dimension=1, random_mode=RandMode.NORMAL):
@@ -90,9 +96,24 @@ class SwarmOptim:
         return
 
     def Init(self, rand_mode=RandMode.NORMAL):
-        coords = [[0.0 for i in range(self.dimension)] for j in range(self.particle_num)]
-        RandomDistribute(self.solution_space_limit, coords, self.dimension, rand_mode=RandMode.NORMAL)
-        self.particles = [Swarm(postition=coords[i], velocity=[0.0 for j in range(self.dimension)], dimension=self.dimension) for i in range(len(coords))]
+        coords = [
+            [0.0 for i in range(self.dimension)] for j in range(self.particle_num)
+        ]
+        RandomDistribute(
+            self.solution_space_limit, coords, self.dimension, rand_mode=RandMode.NORMAL
+        )
+        self.position = [coords[i] for i in range(self.particle_num)]
+        self.velocity = [
+            [0.0 for i in range(self.dimension)] for j in range(self.particle_num)
+        ]
+        self.particles = [
+            Swarm(
+                postition=coords[i],
+                velocity=[0.0 for j in range(self.dimension)],
+                dimension=self.dimension,
+            )
+            for i in range(len(coords))
+        ]
         self.UpdateVelocity()
         self.UpdateBestLocation()
         self.UpdateInertia()
@@ -103,7 +124,8 @@ class SwarmOptim:
     def UpdateVelocity(self, param_size=2):
         self.random_param.clear()
         self.random_param = [random.uniform(0, 1) for i in range(param_size)]
-        # self.velocity = [SwarmOptim.CalcCurVelocity(self.v[i], self.inertia_weight[i], self.individual_param[i], self.social_param, self.random_param[0], self.random_param[1]) for i in range(self.particle_num)]
+        cur_v = [self.CurVelocity(i)[0] for i in range(self.particle_num)]
+        self.velocity.append(cur_v)
         # TODO: add logic: updata best position of individuals
         pass
 
@@ -127,6 +149,11 @@ class SwarmOptim:
         # TODO: verify: if necessary
         pass
 
-    def CurVelocity(self):
-        
-        pass
+    def CurVelocity(self, index, rand_params=[1, 1]):
+        return (
+            self.velocity[index - 1] * self.inertia_weight
+            + self.individual_param[index]
+            * rand_params[0]
+            * (self.pbest[index] - self.position[index])
+            + self.social_param * rand_params[1] * (self.gbest - self.position[index])
+        )
