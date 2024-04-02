@@ -5,10 +5,18 @@ import numpy as np
 import pandas
 import sys
 import random
+from enum import Enum
 
 sys.path.append("./src/base/")
 from ..base.Physics import Timestamp, Dimension
 from ..base.MathUtils import RandomDistribute, RandMode
+
+
+class InertiaUpdateMode(Enum):
+    LINEAR = 0
+    NONLINEAR_1 = 1
+    NONLINEAR_2 = 2
+    ADAPTIVE = 3
 
 
 class Swarm:
@@ -41,7 +49,9 @@ class SwarmOptim:
     # Algorithm Parameters
     max_allowed_error = 0.1
     recur_times = 0
-    inertia_weight = 0.9
+    inertia_weight_start = [0.9]  # start and max
+    inertia_weight_cur = [0.9]
+    inertia_weight_min = [0.4]
     individual_param = [2]  # c1
     social_param = 2  # c2
     scalor = [1]
@@ -124,7 +134,7 @@ class SwarmOptim:
     def UpdateVelocity(self, param_size=2):
         self.random_param.clear()
         self.random_param = [random.uniform(0, 1) for i in range(param_size)]
-        cur_v = [self.CurVelocity(i)[0] for i in range(self.particle_num)]
+        cur_v = [self.CurVelocity(i) for i in range(self.particle_num)]
         self.velocity.append(cur_v)
         # TODO: add logic: updata best position of individuals
         pass
@@ -133,9 +143,48 @@ class SwarmOptim:
         # TODO: add logic: update global best position
         pass
 
-    def UpdateInertia(self):
-        # TODO: add logic: some kind of sort function
-        pass
+    def UpdateInertia(self, cur_recur_time=0, decay_mode=InertiaUpdateMode.LINEAR):
+        match decay_mode:
+            case InertiaUpdateMode.LINEAR:
+                self.inertia_weight_cur = [
+                    self.inertia_weight_start[0]
+                    - (self.inertia_weight_start[0] - self.inertia_weight_cur[0])
+                    * cur_recur_time
+                    / self.recur_times
+                    for i in range(self.particle_num)
+                ]
+            case InertiaUpdateMode.NONLINEAR_1:
+                self.inertia_weight_cur = [
+                    self.inertia_weight_start[0]
+                    - (self.inertia_weight_start[0] - self.inertia_weight_cur[0])
+                    * (cur_recur_time / self.recur_times)
+                    * (cur_recur_time / self.recur_times)
+                    for i in range(self.particle_num)
+                ]
+            case InertiaUpdateMode.NONLINEAR_2:
+                self.inertia_weight_cur = [
+                    self.inertia_weight_start[0]
+                    - (self.inertia_weight_start[0] - self.inertia_weight_cur[0])
+                    * (
+                        (2 * cur_recur_time / self.recur_times)
+                        - (cur_recur_time / self.recur_times)
+                        * (cur_recur_time / self.recur_times)
+                    )
+                    for i in range(self.particle_num)
+                ]
+            case InertiaUpdateMode.ADAPTIVE:
+                average_fitness = sum(self.fitness_values) / self.particle_num
+                min_fitness = min(self.fitness_values)
+                self.inertia_weight_cur = [
+                    (
+                        self.inertia_weight_start[0]
+                        if average_fitness < self.fitness_values[i]
+                        else self.inertia_weight_min[0]
+                        + (self.inertia_weight_start[0] - self.inertia_weight_min[0])
+                        * (self.fitness_values[i] - min_fitness)
+                        / (average_fitness - min_fitness)
+                    ) for i in range(self.particle_num)
+                ]
 
     def Judge(self):
         # TODO: verify: if necessary
@@ -151,7 +200,7 @@ class SwarmOptim:
 
     def CurVelocity(self, index, rand_params=[1, 1]):
         return (
-            self.velocity[index - 1] * self.inertia_weight
+            self.velocity[index - 1] * self.inertia_weight_cur[0]
             + self.individual_param[index]
             * rand_params[0]
             * (self.pbest[index] - self.position[index])
