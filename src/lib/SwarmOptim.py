@@ -9,7 +9,7 @@ from enum import Enum
 
 sys.path.append("./src/base/")
 from ..base.Physics import Timestamp, Dimension
-from ..base.MathUtils import RandomDistribute, RandMode
+from ..common.MathUtils import RandomDistribute, RandMode
 
 
 class InertiaUpdateMode(Enum):
