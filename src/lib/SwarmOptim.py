@@ -6,10 +6,11 @@ import pandas
 import sys
 import random
 from enum import Enum
+from ..base.Exceptions import HINAExceptions
 
 sys.path.append("./src/base/")
 from ..base.Physics import Timestamp, Dimension
-from ..base.MathUtils import RandomDistribute, RandMode
+from ..common.MathUtils import RandomDistribute, RandMode
 
 
 class InertiaUpdateMode(Enum):
@@ -47,6 +48,7 @@ class SwarmOptim:
     position = []
 
     # Algorithm Parameters
+    error = []
     max_allowed_error = 0.1
     recur_times = 0
     inertia_weight_start = [0.9]  # start and max
@@ -61,7 +63,8 @@ class SwarmOptim:
     # TODO: define appropriate form of Qualities params
     velocity_limit = []
     solution_space_limit = []
-    fitness_values = []
+    fitness_buffer = []  # fitness buffer, queue
+    buffer_size = 2
     pbest = []
     gbest = []
 
@@ -72,14 +75,16 @@ class SwarmOptim:
         return self.particle_num
 
     def Solve(self, is_greedy=False, is_mutate=False, init_rand_mode=RandMode.NORMAL):
+        # TODO: finish logic
         self.Init(init_rand_mode)
         for i in range(self.recur_times):
             self.Update(is_mutate=is_mutate)
-            if self.Judge():
+            if self.Judge(i):
                 return
-        return
+        return HINAExceptions.HINASuccessCode
 
     def Update(self, is_mutate=False):
+        # TODO: check:
         self.FitnessEvaluate()
         self.UpdateBestLocation()
         self.UpdateVelocity()
@@ -88,10 +93,16 @@ class SwarmOptim:
             self.Mutate()
 
     def FitnessEvaluate(self, fit_func=lambda: None):
-        self.fitness_values = [
-            fit_func(self.particles[i]) for i in range(self.dimension)
-        ]
-        return
+        # TODO: check: rewrite as decorator?
+        try:
+            pass
+            # self.fitness_buffer.append(
+            #     [fit_func(self.particles[i]) for i in range(self.particle_num)]
+            # )
+        except:
+            raise Exception("Invalid fitness evaluating function")
+        while len(self.fitness_buffer) > self.buffer_size:
+            self.fitness_buffer.pop(0)
 
     def Reset(self, need_init=0, dimension=1, random_mode=RandMode.NORMAL):
         if need_init:
@@ -102,10 +113,11 @@ class SwarmOptim:
         """
         # TODO: finish random func: define as class method or function
         self.particles = [Swarm(dimension) for i in range(self.particle_num)]
-        self.fitness_values = [0 for i in range(self.particle_num)]
+        self.fitness_buffer = [0 for i in range(self.particle_num)]
         return
 
     def Init(self, rand_mode=RandMode.NORMAL):
+        # TODO: check
         coords = [
             [0.0 for i in range(self.dimension)] for j in range(self.particle_num)
         ]
@@ -127,8 +139,6 @@ class SwarmOptim:
         self.UpdateVelocity()
         self.UpdateBestLocation()
         self.UpdateInertia()
-        # TODO: add logic: randomrize velocity and position
-        # TODO: decide: whether random_func need to be defined in class SwarmOptim or in MathUtils
         return
 
     def UpdateVelocity(self, param_size=2):
@@ -182,26 +192,31 @@ class SwarmOptim:
                     for i in range(self.particle_num)
                 ]
             case InertiaUpdateMode.ADAPTIVE:
-                average_fitness = sum(self.fitness_values) / self.particle_num
-                min_fitness = min(self.fitness_values)
+                average_fitness = sum(self.fitness_buffer) / self.particle_num
+                min_fitness = min(self.fitness_buffer)
                 self.inertia_weight_cur = [
                     (
                         self.inertia_weight_start[0]
-                        if average_fitness < self.fitness_values[i]
+                        if average_fitness < self.fitness_buffer[i]
                         else self.inertia_weight_min[0]
                         + (self.inertia_weight_start[0] - self.inertia_weight_min[0])
-                        * (self.fitness_values[i] - min_fitness)
+                        * (self.fitness_buffer[i] - min_fitness)
                         / (average_fitness - min_fitness)
                     )
                     for i in range(self.particle_num)
                 ]
 
-    def Judge(self):
+    def Judge(self, cur_recur_time):
+        if cur_recur_time >= self.recur_times:
+            return True
+        # cur_error = [(self.fitness_buffer[len(self.fitness_buffer) - 1][i] - self.fitness_buffer[len(self.fitness_buffer) - 2][i]) for i in range(self.particle_num) ]
         # TODO: verify: if necessary
         pass
 
     def Mutate(self):
         # TODO: add mutate logic
+        # keep empty till Mutation func deved
+        # serve as an interface for Generic/EKF
         pass
 
     def LimitRange(self):
@@ -219,3 +234,6 @@ class SwarmOptim:
             * rand_params[1]
             * (self.gbest - self.position[len(self.position) - 1][index])
         )
+
+    def Clear(self):
+        pass
