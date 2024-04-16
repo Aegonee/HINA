@@ -3,7 +3,7 @@
 import sys
 import numpy
 sys.path.append("./src/base/")
-from src.base.Physics import Timestamp, Acc, Vel, Disp, Stress, Strain
+from src.base.physics import Timestamp, Acc, Vel, Disp, Stress, Strain
 
 class Frame:
 
@@ -38,19 +38,21 @@ class FrameSeries:
     frames = []
     start_timestamp = 0
     end_timestamp = 0
-    
-    def __init__(self):
-        pass
 
-    def ParserIn(self, array):
-        # TODO: add logic: translate numpy array to Frame and FrameSeries
-        pass
-
-    def ParserOut(self):
-        # TODO: add logic: publish as ndarray
-        # consider: if necessary to add publish nodes?
-        pass
+    # FIX: should be like a c-like struct instead of class?
     
-    def Dumpfiles(self, format):
-        # TODO: add logic: judge if format support: txt, csv...
-        pass
+    # def __init__(self):
+    #     pass
+
+    # def ParserIn(self, array):
+    #     # TODO: add logic: translate numpy array to Frame and FrameSeries
+    #     pass
+
+    # def ParserOut(self):
+    #     # TODO: add logic: publish as ndarray
+    #     # consider: if necessary to add publish nodes?
+    #     pass
+    
+    # def Dumpfiles(self, format):
+    #     # TODO: add logic: judge if format support: txt, csv...
+    #     pass
