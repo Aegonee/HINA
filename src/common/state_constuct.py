@@ -1,6 +1,6 @@
 # 2024.4.2 created by: An Chang
 
-from ..base.Frame import Frame, FrameSeries
+from ..base.frame import Frame, FrameSeries
 
 class StateSpace:
 

@@ -5,5 +5,5 @@ class Generic:
     def __init__(self):
         pass
     
-    def Mute(self):
+    def Mutate(self):
         pass

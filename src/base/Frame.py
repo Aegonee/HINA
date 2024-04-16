@@ -3,7 +3,7 @@
 import sys
 import numpy
 sys.path.append("./src/base/")
-from src.base.Physics import Timestamp, Acc, Vel, Disp, Stress, Strain
+from src.base.physics import Timestamp, Acc, Vel, Disp, Stress, Strain
 
 class Frame:
 

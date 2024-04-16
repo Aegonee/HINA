@@ -1,6 +1,6 @@
 # 2024.4.15 created by: An Chang
 import pandas
-from src.base.Exceptions import HINAExceptions
+from src.base.exceptions import HINAExceptions
 from enum import Enum
 
 # TODO: redefine exception class
