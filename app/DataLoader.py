@@ -1,7 +1,9 @@
 # 2024.4.15 created by: An Chang
 import pandas
 from src.base.Exceptions import HINAExceptions
+from enum import Enum
 
+# TODO: redefine exception class
 
 class Loader:
 
@@ -38,3 +40,28 @@ class Loader:
             return HINAExceptions.HINASuccessCode
         else:
             return HINAExceptions.HINAValueError
+
+class Parser(Loader):
+
+    message = []
+    type = ""
+
+    def __init__(self, message):
+        self.type = ""
+        self.message = message
+
+    def GetMessage(self, loader):
+        if isinstance(loader.type, HINAExceptions):
+            try:
+                rcode = loader.Dump(self.message)
+            except:
+                return HINAExceptions.HINAValueError
+        else:
+            return HINAExceptions.HINAValueError
+
+    def Dump2FrameSeries(self, FrameSeries):
+        match self.type:
+            case "txt":
+                pass
+            case "csv":
+                pass
