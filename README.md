@@ -7,7 +7,7 @@ Heterogeneous Integration for Natural Assessment
 
 以./data/路径下的 Gauss 白噪声加载数据为例，基本可以使用的传感器数据包括$\varepsilon, u, a, F_{excitation}, F_{inner}$，分别为钢筋应变、纵向&横向的位移与加速度、外部激励、测点内力，目前初步拟使用以上物理量建立状态方程。
 
-- 状态向量$\vec{x} = [u, \ddot{u}, \varepsilon, p_{\varepsilon}]$，其中$u$为位移，$\varepsilon$为钢筋应变，$p_{\varepsilon}$为应变的共轭变量，或者广义动量
+- 状态向量$$\vec{x} = [u, \ddot{u}, \varepsilon, p_{\varepsilon}]$$，其中$$u$$为位移，$\varepsilon$为钢筋应变，$p_{\varepsilon}$为应变的共轭变量，或者广义动量
 - 对于线弹性范围内，状态转移方程可以为：$\dot{x} = Ax + Bf$，可以展开为
   \[
   \begin{bmatrix}
