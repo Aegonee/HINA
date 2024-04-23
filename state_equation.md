@@ -39,7 +39,7 @@
   \frac{1}{m}\\
   0\\
   \frac{1}{mL}\\
-  \end{bmatrix} f(t)
+  \end{bmatrix} Bf(t)
   \]
 若使用阻尼比与固有频率表示，则系数矩阵\(A\)可以表示为\[A = 
   \begin{bmatrix}
@@ -59,10 +59,10 @@
 
 #### 方程离散化
 
-以上推导了状态方程，但微分方程无法数值求解，需要写成差分形式，首先\[\boldsymbol{\dot{x}} = \cfrac{d\boldsymbol{x}}{dt}\]当\(dt\)写成时间步\(\Delta t\)时，有差分方程\[\Delta \boldsymbol{x} = A\Delta t\boldsymbol{x}+L\Delta tf\]
-即\[\boldsymbol{x}(n+1) - \boldsymbol{x}(n) = A\Delta t\boldsymbol{x}(n)+L\Delta tf(n)\]整理可得\[\boldsymbol{x}(n+1) = (A\Delta t+\boldsymbol{I})\boldsymbol{x}(n)+L\Delta tf(n)\]
+以上推导了状态方程，但微分方程无法数值求解，需要写成差分形式，首先\[\boldsymbol{\dot{x}} = \cfrac{d\boldsymbol{x}}{dt}\]当\(dt\)写成时间步\(\Delta t\)时，有差分方程\[\Delta \boldsymbol{x} = A\Delta t\boldsymbol{x}+B\Delta tf\]
+即\[\boldsymbol{x}(n+1) - \boldsymbol{x}(n) = A\Delta t\boldsymbol{x}(n)+B\Delta tf(n)\]整理可得\[\boldsymbol{x}(n+1) = (A\Delta t+\boldsymbol{I})\boldsymbol{x}(n)+B\Delta tf(n)\]
 考虑到\(A\Delta t+\boldsymbol{I}\)形式上非常类似\(e^{A\Delta t}\)的Taylor级数的0阶、1阶级数的截断，故可取\[\hat{A} = e^{A\Delta t}\]同理可得\[\Delta t \boldsymbol{I} = A^{-1}(\hat{A} - \boldsymbol{I})\]
-因此\[\hat{L} = L\Delta t = \Delta t \boldsymbol{I}L =  A^{-1}(\hat{A} - \boldsymbol{I})L\]最终得到状态转移方程为\[\boldsymbol{x}(n+1) = \hat{A}\boldsymbol{x}(n) + \hat{L} f(n)\]
+因此\[\hat{B} = B\Delta t = \Delta t \boldsymbol{I}B =  A^{-1}(\hat{A} - \boldsymbol{I})B\]最终得到状态转移方程为\[\boldsymbol{x}(n+1) = \hat{A}\boldsymbol{x}(n) + \hat{B} f(n)\]
 **对于量级问题的处理**，需要对输入向量首先做缩放变换，可取\[\boldsymbol{\alpha} =  
   \begin{bmatrix}
   1 & 0 & 0 & 0\\
@@ -70,3 +70,39 @@
   0 & 0 & \alpha & 0\\
   0 & 0 & 0 & \alpha
   \end{bmatrix} \]并使\[\boldsymbol{x}'= \alpha\boldsymbol{x}\]
+#### 观测方程建立
+对于观测方程，**应该首先明确观测量是哪些**
+
+在该问题中，能从传感器获得的数据，包括位移、加速度、应变、力等，属于已知数据，亦即观测量
+
+在不考虑观测误差、传感器误差的前提下，可以设观测向量\[\boldsymbol{y} = [u \ \varepsilon \ \ddot{u}]\]观测向量应该是状态向量的函数，且可以通过状态向量的递推公式获得任意timestamp下的观测关系，换言之，假设系统是符合Markov过程的成立条件的，此时观测公式应为\[\boldsymbol{y} = C\boldsymbol{x} + Df\]或展开为\[\boldsymbol{y} = 
+  \begin{bmatrix}
+  u \\
+  \varepsilon \\
+  \ddot{u}
+  \end{bmatrix} =
+  \begin{bmatrix}
+  1 & 0 & 0 & 0\\
+  0 & 0 & 1 & 0\\
+  -\frac{k}{m} & -\frac{c}{m} & 0 & 0\\
+  \end{bmatrix}
+  \begin{bmatrix}
+  u \\
+  \dot{u} \\
+  \varepsilon \\
+  \dot{\varepsilon} \\
+  \end{bmatrix} +
+  \begin{bmatrix}
+  0 \\
+  0 \\
+  \frac{1}{m} \\
+  \end{bmatrix} Df
+  \]
+  此时考虑零初始条件，即\(\boldsymbol{x}(0) = \boldsymbol{0}\)，则对于位移\(u\)与应变\(\varepsilon\)的观测，有\[\boldsymbol{y}_{u,\varepsilon} = F_{u,\varepsilon}C\boldsymbol{x}\]其中\(F_{u,\varepsilon}\)是稀疏且元素为0，1的过滤矩阵，从\(\boldsymbol{x}\)的递推出发，有
+  \[\boldsymbol{y}_{u,\varepsilon}(0) = F_{u,\varepsilon}C\boldsymbol{x}(0) = \boldsymbol{0}\]\[\boldsymbol{y}_{u,\varepsilon}(1) = F_{u,\varepsilon}C\boldsymbol{x}(1) = F_{u,\varepsilon}C\hat{B}f(1)\]\[\boldsymbol{y}_{u,\varepsilon}(2) = F_{u,\varepsilon}C\boldsymbol{x}(2) = F_{u,\varepsilon}C(\hat{A}\hat{B}f(1)+\hat{B}f(2))\]\[...\]\[\boldsymbol{y}_{u,\varepsilon}(n) = F_{u,\varepsilon}C\boldsymbol{x}(n) = F_{u,\varepsilon}C\sum_{i = 0}^{n-1}\hat{A}^{n-1-i}\hat{B}f(i)\]同理对于加速度\(\ddot{u}\)的观测
+  \[\boldsymbol{y}_{\ddot{u}}(n) = F_{\ddot{u}}C\boldsymbol{x}(n) + F_{\ddot{u}}Df = F_{\ddot{u}}C\sum_{i = 0}^{n-1}\hat{A}^{n-1-i}\hat{B}f(i)+F_{\ddot{u}}Cf(n)\]此时即得最终的待求解的状态方程，\(\boldsymbol{y},F,f,\Delta t,B\)均已知，而不论是\(\hat{A},\hat{B},C\)还是D，均取决于阻尼比\(\zeta\)与固有频率\(\omega_0\)构成的稀疏矩阵，在弹性范筹可以考虑把广义坐标变换系数矩阵\(L\)同样作为搜索目标
+  #### 代价选取
+  尚在考虑中...暂时按照\(\zeta\)-\(\omega\)坐标系限制范围作为二维解空间，选取根据观测公式中的预测矩阵、激励计算的观测向量与原向量的差向量的二阶范数（或一阶范数）与最大容忍度进行比较即可
+  
+  #### 其他
+  理论上可以参考文献对激励进行识别，不局限于力学参数，或者说对激励更加方便计算，先进行测试，若计算效率不高则更换识别目标
