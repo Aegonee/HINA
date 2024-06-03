@@ -6,7 +6,7 @@ import pandas
 import sys
 import random
 from enum import Enum
-from ..base.exceptions import HINAExceptions
+from ...src.base.Exceptions import HINAExceptions
 
 sys.path.append("./src/base/")
 from ..base.physics import Timestamp, Dimension
