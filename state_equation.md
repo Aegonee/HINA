@@ -8,13 +8,13 @@
 
 #### 状态空间建立推导
 
-对于该系统，考虑分别选取位移\(u\)、应变\(\varepsilon\)为广义坐标，则状态向量\[\boldsymbol{x} = [u \ \dot{u} \ \varepsilon \ \dot{\varepsilon}]^{T}\]这里的目标就是构建出\(\boldsymbol{\dot{x}}\)关于\(\boldsymbol{x}\)的线性矩阵方程。首先对于广义坐标位移，有\[\dot{u} = \cfrac{du}{dt}\]而通过阻尼受迫振动系统的动力学控制方程\[m\ddot{u} + c\dot{u} + ku = Bf\]其中\(f=f(t)\).
+对于该系统，考虑分别选取位移\(u\)、应变\(\varepsilon\)为广义坐标，则状态向量\[\boldsymbol{x} = [u \ \dot{u} \ \varepsilon \ \dot{\varepsilon}]^{T}\]这里的目标就是构建出\(\boldsymbol{\dot{x}}\)关于\(\boldsymbol{x}\)的线性矩阵方程。首先对于广义坐标位移，有\[\dot{u} = \cfrac{du}{dt}\]而通过阻尼受迫振动系统的动力学控制方程\[m\ddot{u} + c\dot{u} + ku = -m\ddot{u}_g\]其中\(f=f(t)\).
 
 仅考虑线弹性条件下的结构力学特征，可以认为对于位移和应变，二者应成立线性关系\[u = L\varepsilon\]其中\(L\)可以是零阶或二阶张量，但不论如何均为线性性表达.
 
-对于另一个广义坐标应变，不难看出其广义速度为\[\dot{\varepsilon} = \cfrac{d\varepsilon}{dt}\]通过对位移-应变关系方程左右对时间微分，代入可得\[\hat{m}\ddot{\varepsilon} + \hat{c}\dot{u} + \hat{k}u = Bf\]其中\(\hat{m} = mL, \hat{c} = cL, \hat{k} = kL\).
+对于另一个广义坐标应变，不难看出其广义速度为\[\dot{\varepsilon} = \cfrac{d\varepsilon}{dt}\]通过对位移-应变关系方程左右对时间微分，代入可得\[\hat{m}\ddot{\varepsilon} + \hat{c}\dot{u} + \hat{k}u = -m\ddot{u}_g\]其中\(\hat{m} = mL, \hat{c} = cL, \hat{k} = kL\).
 
-此时对于线弹性范围内，状态转移方程可以为：$\dot{\boldsymbol{x}} = A\boldsymbol{x} + Bf$，可以展开为
+此时对于线弹性范围内，状态转移方程可以为：$\dot{\boldsymbol{x}} = A\boldsymbol{x} - m\ddot{u}_g$，可以展开为
   \[
   \begin{bmatrix}
   \dot{u}\\
@@ -33,13 +33,13 @@
   \dot{u}\\
   \varepsilon\\
   \dot{\varepsilon}
-  \end{bmatrix} +
+  \end{bmatrix} -
   \begin{bmatrix}
   0\\
   \frac{1}{m}\\
   0\\
   \frac{1}{mL}\\
-  \end{bmatrix} Bf(t)
+  \end{bmatrix}m\ddot{u}_g
   \]
 若使用阻尼比与固有频率表示，则系数矩阵\(A\)可以表示为\[A = 
   \begin{bmatrix}
@@ -59,8 +59,8 @@
 
 #### 方程离散化
 
-以上推导了状态方程，但微分方程无法数值求解，需要写成差分形式，首先\[\boldsymbol{\dot{x}} = \cfrac{d\boldsymbol{x}}{dt}\]当\(dt\)写成时间步\(\Delta t\)时，有差分方程\[\Delta \boldsymbol{x} = A\Delta t\boldsymbol{x}+B\Delta tf\]
-即\[\boldsymbol{x}(n+1) - \boldsymbol{x}(n) = A\Delta t\boldsymbol{x}(n)+B\Delta tf(n)\]整理可得\[\boldsymbol{x}(n+1) = (A\Delta t+\boldsymbol{I})\boldsymbol{x}(n)+B\Delta tf(n)\]
+以上推导了状态方程，但微分方程无法数值求解，需要写成差分形式，首先\[\boldsymbol{\dot{x}} = \cfrac{d\boldsymbol{x}}{dt}\]当\(dt\)写成时间步\(\Delta t\)时，有差分方程\[\Delta \boldsymbol{x} = A\Delta t\boldsymbol{x}-B\ddot{u}_g\Delta t\]
+即\[\boldsymbol{x}(n+1) - \boldsymbol{x}(n) = A\Delta t\boldsymbol{x}(n)-B\ddot{u}_g\Delta t\]整理可得\[\boldsymbol{x}(n+1) = (A\Delta t+\boldsymbol{I})\boldsymbol{x}(n)-B\ddot{u}_g\Delta t\]
 考虑到\(A\Delta t+\boldsymbol{I}\)形式上非常类似\(e^{A\Delta t}\)的Taylor级数的0阶、1阶级数的截断，故可取\[\hat{A} = e^{A\Delta t}\]同理可得\[\Delta t \boldsymbol{I} = A^{-1}(\hat{A} - \boldsymbol{I})\]
 因此\[\hat{B} = B\Delta t = \Delta t \boldsymbol{I}B =  A^{-1}(\hat{A} - \boldsymbol{I})B\]最终得到状态转移方程为\[\boldsymbol{x}(n+1) = \hat{A}\boldsymbol{x}(n) + \hat{B} f(n)\]
 **对于量级问题的处理**，需要对输入向量首先做缩放变换，可取\[\boldsymbol{\alpha} =  
@@ -75,7 +75,7 @@
 
 在该问题中，能从传感器获得的数据，包括位移、加速度、应变、力等，属于已知数据，亦即观测量
 
-在不考虑观测误差、传感器误差的前提下，可以设观测向量\[\boldsymbol{y} = [u \ \varepsilon \ \ddot{u}]\]观测向量应该是状态向量的函数，且可以通过状态向量的递推公式获得任意timestamp下的观测关系，换言之，假设系统是符合Markov过程的成立条件的，此时观测公式应为\[\boldsymbol{y} = C\boldsymbol{x} + Df\]或展开为\[\boldsymbol{y} = 
+在不考虑观测误差、传感器误差的前提下，可以设观测向量\[\boldsymbol{y} = [u \ \varepsilon \ \ddot{u}]\]观测向量应该是状态向量的函数，且可以通过状态向量的递推公式获得任意timestamp下的观测关系，换言之，假设系统是符合Markov过程的成立条件的，此时观测公式应为\[\boldsymbol{y} = C\boldsymbol{x} - D\ddot{u}_g\]或展开为\[\boldsymbol{y} = 
   \begin{bmatrix}
   u \\
   \varepsilon \\
